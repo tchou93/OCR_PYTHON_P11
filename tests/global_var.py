@@ -1,10 +1,11 @@
 ENDPOINT_SHOWSUMMARY = "/showSummary"
 ENDPOINT_PURCHASE_PLACES = "/purchasePlaces"
+ENDPOINT_BOOK = "/book"
 MAX_PURCHASE = 12
 
 simu_clubs = [
     {
-        "name": "Simply Lift 333",
+        "name": "Simply Lift",
         "email": "john@simplylift.com",
         "points": "13"
     },
