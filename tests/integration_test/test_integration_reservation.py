@@ -4,6 +4,7 @@ import random
 from tests.global_var import ENDPOINT_PURCHASE_PLACES
 from tests.global_var import MAX_PURCHASE
 
+
 @pytest.fixture
 def valid_reservation_mocker(mocker):
     mocker.patch('server.valid_reservation', return_value=(True, "Valid message"))
@@ -17,7 +18,7 @@ def invalid_reservation_mocker(mocker):
 class TestReservation:
 
     def test_good_purchase(self, client, valid_reservation_mocker, data_base_mocker, clubs_test,
-                                  competitions_test):
+                           competitions_test):
         data = {
             'competition': (competitions_test[0])['name'],
             'club': (clubs_test[0])['name'],
@@ -34,11 +35,11 @@ class TestReservation:
                int((competitions_test[0])['numberOfPlaces'])
 
     def test_bad_purchase(self, client, invalid_reservation_mocker, data_base_mocker, clubs_test,
-                                  competitions_test):
+                          competitions_test):
         data = {
             'competition': (competitions_test[0])['name'],
             'club': (clubs_test[0])['name'],
-            'places': 0,
+            'places': MAX_PURCHASE + 1,
         }
         club_points_before_purchase = (clubs_test[0])['points']
         competitions_places_before_purchase = (competitions_test[0])['numberOfPlaces']
