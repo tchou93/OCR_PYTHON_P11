@@ -1,6 +1,7 @@
 ENDPOINT_SHOWSUMMARY = "/showSummary"
 ENDPOINT_PURCHASE_PLACES = "/purchasePlaces"
 ENDPOINT_BOOK = "/book"
+ENDPOINT_RECAP_CLUB_POINTS = "/pointsDisplay"
 MAX_PURCHASE = 12
 
 simu_clubs = [

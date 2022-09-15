@@ -2,7 +2,8 @@ import pytest
 from http import HTTPStatus
 
 import server
-from tests.global_var import ENDPOINT_SHOWSUMMARY, ENDPOINT_BOOK, simu_clubs, simu_competitions
+from tests.global_var import ENDPOINT_SHOWSUMMARY, ENDPOINT_BOOK, simu_clubs, simu_competitions, \
+    ENDPOINT_RECAP_CLUB_POINTS
 
 
 @pytest.fixture
@@ -80,3 +81,13 @@ class TestDisplay:
 
         assert result.status_code == status_code
         assert message in result.data.decode()
+
+    def test_display_recap_club_points(self, client, data_base_mocker):
+        data = {
+            'clubs': simu_clubs,
+        }
+        result = client.get(ENDPOINT_RECAP_CLUB_POINTS, data=data)
+        assert result.status_code == HTTPStatus.OK
+        for club in simu_clubs:
+            assert club["name"] in result.data.decode()
+            assert club["points"] in result.data.decode()

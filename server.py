@@ -125,9 +125,12 @@ def purchaseplaces():
         return render_template('booking.html', club=club, competition=competition), HTTPStatus.BAD_REQUEST
 
 
-# TODO: Add route for points display
-
-
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
+
+
+@app.route('/pointsDisplay')
+def pointsdisplay():
+    clubs_sort_by_points = sorted(clubs, key=lambda club: int(club['points']))
+    return render_template('recap_club_points.html', clubs=clubs_sort_by_points)
