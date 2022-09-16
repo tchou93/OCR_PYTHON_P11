@@ -37,7 +37,7 @@ def valid_reservation(places_required, clubpoint, nb_place_competition):
 
 
 def getOldNewCompetitions(comp):
-    comp_tmp = copy.deepcopy(comp)
+    comp_tmp = comp.copy()
     comp_old = []
     comp_new = []
     actual_date = datetime.now()
@@ -115,6 +115,7 @@ def purchaseplaces():
         competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesrequired
         club['points'] = int(club['points']) - placesrequired
         flash(message)
+        print(competitions_new)
         return render_template('welcome.html',
                                club=club,
                                competitions_old=competitions_old,
