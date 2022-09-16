@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, flash, url_for, json
-import copy
 import time
 from datetime import datetime
 from http import HTTPStatus
@@ -28,6 +27,9 @@ def valid_reservation(places_required, clubpoint, nb_place_competition):
 
     if places_required > clubpoint:
         message += "The places required is more than the number of places of the club."
+
+    if places_required <= 0:
+        message += "The places required should be more than 0."
 
     if message == "":
         message += "Great-booking complete!"
@@ -106,25 +108,27 @@ def book(competition, club):
 
 @app.route('/purchasePlaces', methods=['POST'])
 def purchaseplaces():
-    competition = [c for c in competitions if c['name'] == request.form['competition']][0]
-    club = [c for c in clubs if c['name'] == request.form['club']][0]
-    placesrequired = int(request.form['places'])
-
-    statut, message = valid_reservation(placesrequired, int(club["points"]), int(competition['numberOfPlaces']))
-    if statut:
-        competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesrequired
-        club['points'] = int(club['points']) - placesrequired
-        flash(message)
-        print(competitions_new)
-        return render_template('welcome.html',
-                               club=club,
-                               competitions_old=competitions_old,
-                               competitions_new=competitions_new
-                               )
-    else:
-        flash(message)
-        return render_template('booking.html', club=club, competition=competition), HTTPStatus.BAD_REQUEST
-
+    try:
+        competition = [c for c in competitions if c['name'] == request.form['competition']][0]
+        club = [c for c in clubs if c['name'] == request.form['club']][0]
+        placesrequired = int(request.form['places'])
+        statut, message = valid_reservation(placesrequired, int(club["points"]), int(competition['numberOfPlaces']))
+        if statut:
+            competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesrequired
+            club['points'] = int(club['points']) - placesrequired
+            flash(message)
+            print(competitions_new)
+            return render_template('welcome.html',
+                                   club=club,
+                                   competitions_old=competitions_old,
+                                   competitions_new=competitions_new
+                                   )
+        else:
+            flash(message)
+            return render_template('booking.html', club=club, competition=competition), HTTPStatus.BAD_REQUEST
+    except ValueError:
+        flash('The entry must be an number between 1 and 12.')
+        return render_template('booking.html', club=club, competition=competition), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @app.route('/logout')
 def logout():
