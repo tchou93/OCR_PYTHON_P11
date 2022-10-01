@@ -44,3 +44,10 @@ simu_competitions = [
         "numberOfPlaces": "50"
     },
 ]
+
+simu_dict_clubs_purchase = {
+    'Simply Lift': {'Spring Festival': 0, 'Fall Classic': 0, 'Competition Test': 0},
+    'Iron Temple': {'Spring Festival': 0, 'Fall Classic': 0, 'Competition Test': 0},
+    'She Lifts': {'Spring Festival': 0, 'Fall Classic': 0, 'Competition Test': 0},
+    'Club Test': {'Spring Festival': 0, 'Fall Classic': 0, 'Competition Test': 0}
+}

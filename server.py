@@ -1,70 +1,20 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, json
-import time
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, flash, url_for
 from http import HTTPStatus
+from external_functions import loadcompetitions, loadclubs, init_dict_club_purchase, get_old_new_competitions, \
+    get_possibility_to_book, \
+    valid_reservation, update_club_purchase
 
-
-########### Internal function ###########
-def loadclubs() -> object:
-    with open(r'D:\Tan\Travail\developpement\python\projetOC\projet11\clubs.json') as c:
-        listofclubs = json.load(c)['clubs']
-        return listofclubs
-
-
-def loadcompetitions():
-    with open(r'D:\Tan\Travail\developpement\python\projetOC\projet11\competitions.json') as comps:
-        listofcompetitions = json.load(comps)['competitions']
-        return listofcompetitions
-
-
-def valid_reservation(places_required, clubpoint, nb_place_competition):
-    message = ""
-    if places_required > 12:
-        message += "The places required should not be more than 12. "
-
-    if places_required > nb_place_competition:
-        message += "The places required is more than the number of places of the competition. "
-
-    if places_required > clubpoint:
-        message += "The places required is more than the number of places of the club."
-
-    if places_required <= 0:
-        message += "The places required should be more than 0."
-
-    if message == "":
-        message += "Great-booking complete!"
-        return True, message
-    else:
-        return False, message
-
-
-def getOldNewCompetitions(comp):
-    comp_tmp = comp.copy()
-    comp_old = []
-    comp_new = []
-    actual_date = datetime.now()
-    actual_date = actual_date.strftime("%Y-%m-%d %H:%M:%S")
-    formatted_actual_date = time.strptime(actual_date, "%Y-%m-%d %H:%M:%S")
-
-    while comp_tmp:
-        formatted_competition_date = time.strptime((comp_tmp[0])["date"], "%Y-%m-%d %H:%M:%S")
-        if formatted_actual_date > formatted_competition_date:
-            comp_old.append(comp_tmp.pop(0))
-        else:
-            comp_new.append(comp_tmp.pop(0))
-    return comp_old, comp_new
-
-
-########### Create app ###########
+# Create app
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
 competitions = loadcompetitions()
-competitions_old, competitions_new = getOldNewCompetitions(competitions)
+competitions_old, competitions_new = get_old_new_competitions(competitions)
 clubs = loadclubs()
+dict_clubs_purchase = init_dict_club_purchase(clubs, competitions)
 
 
-########### Endpoints ###########
+# Endpoints
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -74,10 +24,12 @@ def index():
 def showsummary():
     try:
         club = [club for club in clubs if club['email'] == request.form['email']][0]
+        books_ko, books_ok = get_possibility_to_book(club, competitions_new, dict_clubs_purchase)
         return render_template('welcome.html',
                                club=club,
-                               competitions_old=competitions_old,
-                               competitions_new=competitions_new
+                               competitions_no_book=competitions_old + books_ko,
+                               competitions_book=books_ok,
+                               already_book=dict_clubs_purchase
                                )
 
     except IndexError:
@@ -94,16 +46,15 @@ def book(competition, club):
             return render_template('booking.html', club=foundclub, competition=foundcompetition)
         else:
             flash("This is a old competition-please try again")
+            books_ko, books_ok = get_possibility_to_book(foundclub, competitions_new, dict_clubs_purchase)
             return render_template('welcome.html',
-                                   club=club,
-                                   competitions_old=competitions_old,
-                                   competitions_new=competitions_new), HTTPStatus.BAD_REQUEST
+                                   club=foundclub,
+                                   competitions_no_book=competitions_old + books_ko,
+                                   competitions_book=books_ok,
+                                   already_book=dict_clubs_purchase
+                                   ), HTTPStatus.BAD_REQUEST
     except IndexError:
-        flash("Something went wrong-please try again", 'error')
-        return render_template('welcome.html',
-                               club=club,
-                               competitions_old=competitions_old,
-                               competitions_new=competitions_new), HTTPStatus.NOT_FOUND
+        return render_template('error.html'), HTTPStatus.NOT_FOUND
 
 
 @app.route('/purchasePlaces', methods=['POST'])
@@ -111,17 +62,26 @@ def purchaseplaces():
     try:
         competition = [c for c in competitions if c['name'] == request.form['competition']][0]
         club = [c for c in clubs if c['name'] == request.form['club']][0]
+    except IndexError:
+        return render_template('error.html'), HTTPStatus.NOT_FOUND
+
+    try:
         placesrequired = int(request.form['places'])
-        statut, message = valid_reservation(placesrequired, int(club["points"]), int(competition['numberOfPlaces']))
+        statut, message = valid_reservation((dict_clubs_purchase[club["name"]])[competition["name"]],
+                                            placesrequired,
+                                            int(club["points"]),
+                                            int(competition['numberOfPlaces']))
         if statut:
+            update_club_purchase(dict_clubs_purchase, club["name"], competition["name"], placesrequired)
             competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesrequired
             club['points'] = int(club['points']) - placesrequired
             flash(message)
-            print(competitions_new)
+            books_ko, books_ok = get_possibility_to_book(club, competitions_new, dict_clubs_purchase)
             return render_template('welcome.html',
                                    club=club,
-                                   competitions_old=competitions_old,
-                                   competitions_new=competitions_new
+                                   competitions_no_book=competitions_old + books_ko,
+                                   competitions_book=books_ok,
+                                   already_book=dict_clubs_purchase
                                    )
         else:
             flash(message)
@@ -130,6 +90,7 @@ def purchaseplaces():
         flash('The entry must be an number between 1 and 12.')
         return render_template('booking.html', club=club, competition=competition), HTTPStatus.INTERNAL_SERVER_ERROR
 
+
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
@@ -137,5 +98,5 @@ def logout():
 
 @app.route('/pointsDisplay')
 def pointsdisplay():
-    clubs_sort_by_points = sorted(clubs, key=lambda club: int(club['points']))
+    clubs_sort_by_points = sorted(clubs, key=lambda c: int(c['points']))
     return render_template('recap_club_points.html', clubs=clubs_sort_by_points)

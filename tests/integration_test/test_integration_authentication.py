@@ -9,7 +9,7 @@ class TestAuthentication:
         ({'email': 'clubtest@gmail.com'}, HTTPStatus.OK),
         ({'email': 'kate@shelifts.co.uk'}, HTTPStatus.OK),
     ])
-    def test_good_email(self, email, status_code, client, data_base_mocker):
+    def test_good_email(self, email, status_code, client, data_base_mocker, new_old_competitions_mocker):
         result = client.post(ENDPOINT_SHOWSUMMARY, data=email)
         message = f"Welcome, {email['email']}"
 
@@ -20,7 +20,7 @@ class TestAuthentication:
         ({'email': 'test@gmail.com'}, HTTPStatus.NOT_FOUND),
         ({'email': ''}, HTTPStatus.NOT_FOUND),
     ])
-    def test_bad_email(self, email, status_code, client, data_base_mocker):
+    def test_bad_email(self, email, status_code, client, data_base_mocker, new_old_competitions_mocker):
         result = client.post(ENDPOINT_SHOWSUMMARY, data=email)
 
         assert result.status_code == HTTPStatus.UNAUTHORIZED

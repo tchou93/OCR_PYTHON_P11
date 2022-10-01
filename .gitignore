@@ -1,9 +1,6 @@
-bin
-include
-lib
-.Python
 env/
-.idea
-.envrc
+drivers/
+htmlcov/
+.idea/
 __pycache__
-*.json
+.coverage

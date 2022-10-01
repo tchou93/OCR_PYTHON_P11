@@ -21,15 +21,14 @@
 
     <h3>Competitions:</h3>
     <ul>
-        {% for comp in competitions_old + competitions_new  %}
-            <li>
+        {% for comp in competitions_no_book + competitions_book  %}
+            <li id="details_{{comp['name'].replace(" ","")}}">
                 {{comp['name']}}<br />
-                Date: {{comp['date']}} </br>
-                Number of Places: {{comp['numberOfPlaces']}}
-                {% if comp in competitions_new %}
-                    {% if comp['numberOfPlaces']|int >0 %}
-                        <a href="{{ url_for('book',competition=comp['name'],club=club['name']) }}">Book Places</a>
-                    {% endif %}
+                Date: {{comp['date']}} <br />
+                Number of Places: {{comp['numberOfPlaces']}} <br />
+                Already booked: {{(already_book[club["name"]])[comp["name"]]}} <br />
+                {% if comp in competitions_book %}
+                    <a href="{{url_for('book',competition=comp['name'],club=club['name'])}}" id="url_book_{{comp['name'].replace(" ","")}}">Book Places</a>
                 {% endif %}
             </li>
             <hr />

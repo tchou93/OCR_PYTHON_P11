@@ -1,33 +1,8 @@
 import pytest
 from http import HTTPStatus
 
-import server
 from tests.global_var import ENDPOINT_SHOWSUMMARY, ENDPOINT_BOOK, simu_clubs, simu_competitions, \
     ENDPOINT_RECAP_CLUB_POINTS
-
-
-@pytest.fixture
-def new_old_competitions_mocker(mocker):
-    competitions_old = [simu_competitions[0], simu_competitions[1]]
-    competitions_new = [simu_competitions[2]]
-    mocker.patch.object(server, "competitions_old", competitions_old)
-    mocker.patch.object(server, "competitions_new", competitions_new)
-
-
-@pytest.fixture
-def only_new_competitions_mocker(mocker):
-    competitions_old = []
-    competitions_new = [simu_competitions[2]]
-    mocker.patch.object(server, "competitions_old", competitions_old)
-    mocker.patch.object(server, "competitions_new", competitions_new)
-
-
-@pytest.fixture
-def only_old_competitions_mocker(mocker):
-    competitions_old = [simu_competitions[0], simu_competitions[1]]
-    competitions_new = []
-    mocker.patch.object(server, "competitions_old", competitions_old)
-    mocker.patch.object(server, "competitions_new", competitions_new)
 
 
 class TestDisplay:
@@ -76,7 +51,7 @@ class TestDisplay:
          HTTPStatus.BAD_REQUEST)
     ])
     def test_display_book_validity_path(self, client, data_base_mocker, new_old_competitions_mocker,
-                                     endpoint, message, status_code):
+                                        endpoint, message, status_code):
         result = client.get(endpoint)
 
         assert result.status_code == status_code
