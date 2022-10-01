@@ -1,3 +1,5 @@
+ENDPOINT_INDEX = "/"
+ENDPOINT_LOGOUT = "/logout"
 ENDPOINT_SHOWSUMMARY = "/showSummary"
 ENDPOINT_PURCHASE_PLACES = "/purchasePlaces"
 ENDPOINT_BOOK = "/book"

@@ -1,2 +1,11 @@
 [run]
-omit = tests/*
+omit =
+        */__init__.py
+        tests/performance_test/*
+        */usr/local/lib*
+
+[report]
+omit =
+        */__init__.py
+        tests/performance_test/*
+        */usr/local/lib*
