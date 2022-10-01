@@ -35,8 +35,10 @@ $ pytest tests/integration_test
 
 * Functional test:
 $ pytest tests/functional_test
+```
 
 ## Information about how to run the Performance test from the project root:
+```
 Step 1:
 * Run flask server
 
